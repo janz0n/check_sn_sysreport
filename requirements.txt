@@ -1,3 +1,2 @@
 nagiosplugin==1.2.4
-requests==2.21.0
-beautifulsoup4==4.7.1
+requests-html==0.10.0

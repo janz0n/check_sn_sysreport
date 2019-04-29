@@ -2,8 +2,16 @@
 Nagios/Icinga/OP5 plugin for scarping ServiceNow sys_report_display.do value
 https://hi.service-now.com/kb_view.do?sysparm_article=KB0727099
 
+> Tested on CentOS7
+
 ## Installation
 pip install -r requirements.txt
+
+CentOS packages
+yum -y install $(cat pkgs.txt)
+
+Uses chromium (will be installed by pip)
+https://github.com/GoogleChrome/puppeteer
 
 ## Usage
 ```
