@@ -1,5 +1,5 @@
 # check_sn_sysreport
-Nagios/Naemon/OP5 Plugin for fetching blocked threats from Cisco Umbrella API (Reporting API - Security Activity Report)
+Nagios/Icinga/OP5 plugin for scarping ServiceNow sys_report_display.do value
 https://hi.service-now.com/kb_view.do?sysparm_article=KB0727099
 
 ## Installation
