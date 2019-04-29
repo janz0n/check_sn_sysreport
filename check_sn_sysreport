@@ -1,0 +1,97 @@
+#!/usr/bin/env python3.6
+# -*- coding: utf-8 -*-
+# check_sn_sysreport - Nagios/Icinga/OP5 plugin for scarping ServiceNow sys_report_display.do values
+
+__author__ = "Henrik Janzon"
+__credits__ = [""]
+__license__ = "GPL"
+__version__ = "1.0"
+__maintainer__ = "Henrik Janzon"
+__email__ = "hjanzon@op5.com"
+
+try:
+    import argparse
+    import sys
+    import time
+    import nagiosplugin
+    import requests
+    import logging
+    from requests_html import HTMLSession
+except ImportError as missing:
+    print("Error - could not import all required Python modules: {} \nDependency installation with pip:\n pip install -r requirements.txt".format(missing))
+    sys.exit(3)
+
+
+log = logging.getLogger('nagiosplugin')
+
+
+def format_perfdata(self, check, linebreak=None):
+    """Patching format_perfdata in the Output class, to reverse to order of perfdata."""
+    if not check.perfdata:
+        return ''
+    out = ' '.join(reversed(check.perfdata))
+    return '| ' + self._screen_chars(out, 'perfdata')
+nagiosplugin.output.Output.format_perfdata = format_perfdata
+
+
+class SNsysreport(nagiosplugin.Resource):
+    """Data aquisition, collect and process results."""
+    def __init__(self, org, id, label):
+        self.org = org
+        self.id  = id
+        self.label  = label
+        self.data = self.fetch_data()
+
+    def fetch_data(self):
+        """Fetch data from the ServiceNow sys_report_display.do"""
+        verifysll = True
+        params = {
+            'sysparm_report_id': self.id,
+        }
+        session = HTMLSession()
+        r = session.get("https://{}.service-now.com/sys_report_display.do".format(self.org),params=params, verify=(verifysll))
+        r.html.render()
+        value = r.html.find("a#{}".format(self.id), first=True).text
+        return int(value)
+
+    def probe(self):
+        """Create check metric for returned data value"""
+        return [nagiosplugin.Metric(self.label, self.data, context='hits')]
+
+
+class ValueSummary(nagiosplugin.Summary):
+    """Status line conveying label information"""
+    def __init__(self, label):
+        self.label = label
+
+    def ok(self, results):
+        return "{} {}".format(results[0].metric, self.label)
+
+
+def parse_args():
+    """Define and parse script arguments."""
+    desc = "check_sn_sysreport"
+    epi = "https://hi.service-now.com/kb_view.do?sysparm_article=KB0727099"
+    argp = argparse.ArgumentParser(description=desc, epilog=epi)
+    argp._optionals.title = "Options"
+    argp.add_argument('-o', '--org', required=True, dest='org', type=str, help='INSTANCE_NAME - https://<Instance_Name>.service-now.com/sys_report_display.do?sysparm_report_id=<SYS_ID>')
+    argp.add_argument('-i', '--id', required=True, dest='id', type=str, help='SYS_ID  - https://<Instance_Name>.service-now.com/sys_report_display.do?sysparm_report_id=<SYS_ID>')
+    argp.add_argument('-l', '--label', required=False, dest='label', type=str, default='hits', help='Optional label')
+    argp.add_argument('-w', '--warning', metavar='RANGE', default='')
+    argp.add_argument('-c', '--critical', metavar='RANGE', default='')
+    argp.add_argument('-v', '--verbose', action='count', default=0, help='increase output verbosity (use up to 3 times)')
+    argp.add_argument('-V', '--version', action='version', version='%(prog)s 1.0')
+    argp.add_argument('-t', '--timeout', default=30, help='timeout')
+    return argp.parse_args()
+
+
+@nagiosplugin.guarded
+def main():
+    args = parse_args()
+    check = nagiosplugin.Check(SNsysreport(args.org, args.id, args.label), nagiosplugin.ScalarContext('hits', args.warning, args.critical, fmt_metric="{value}"),ValueSummary(args.label))
+    check.name = "CHECK_SN_SYSREPORT"
+    check.main(args.verbose, args.timeout)
+
+
+if __name__ == '__main__':
+    main()
