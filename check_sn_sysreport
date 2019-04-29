@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
-# check_sn_sysreport - Nagios/Icinga/OP5 plugin for scarping ServiceNow sys_report_display.do values
+# check_sn_sysreport - Nagios/Icinga/OP5 plugin for scraping ServiceNow sys_report_display.do values
 
 __author__ = "Henrik Janzon"
 __credits__ = [""]
