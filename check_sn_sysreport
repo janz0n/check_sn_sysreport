@@ -50,7 +50,7 @@ class SNsysreport(nagiosplugin.Resource):
         }
         session = HTMLSession()
         r = session.get("https://{}.service-now.com/sys_report_display.do".format(self.org),params=params, verify=(verifysll))
-        r.html.render()
+        r.html.render(sleep=1)
         value = r.html.find("a#{}".format(self.id), first=True).text
         return int(value)
 

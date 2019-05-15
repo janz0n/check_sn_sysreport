@@ -1,5 +1,5 @@
 # check_sn_sysreport
-Nagios/Icinga/OP5 plugin for scarping ServiceNow sys_report_display.do value
+Nagios/Icinga/OP5 plugin for scraping ServiceNow sys_report_display.do value
 https://hi.service-now.com/kb_view.do?sysparm_article=KB0727099
 
 > Tested on CentOS7
